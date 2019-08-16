@@ -5,7 +5,7 @@
   "dependencies": {
     "@miragejs/server": "0.1.18",
     "@testing-library/jest-dom": "^4.0.0",
-    "@testing-library/react": "^8.0.9",
+    "@testing-library/react": "^9.1.2",
     "prettier": "^1.18.2",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
