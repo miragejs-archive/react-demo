@@ -1,6 +1,6 @@
-import { Server, Factory, Model } from '@miragejs/server';
+import { Server, Factory, Model } from "@miragejs/server";
 
-let startMirage = function({ environment = 'test' } = {}) {
+let startMirage = function({ environment = "test" } = {}) {
   let server = new Server({
     environment,
     models: {
@@ -15,21 +15,21 @@ let startMirage = function({ environment = 'test' } = {}) {
     },
     scenarios: {
       default(server) {
-        server.createList('user', 10);
+        server.createList("user", 10);
       }
     },
     baseConfig() {
-      this.namespace = 'api';
+      this.namespace = "api";
 
       // the following will respond with a JSON payload
       // containing all users
-      this.get('/users');
+      this.get("/users");
 
       this.passthrough();
     }
   });
 
   return server;
-}
+};
 
-export { startMirage }
+export { startMirage };
