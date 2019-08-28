@@ -16,12 +16,6 @@ export default function App() {
         try {
           let json = await response.json();
           if (response.ok) {
-            if (!json.users) {
-              console.log("Received mirage response without users!");
-              console.log("response", response);
-              console.log("json", json);
-              throw new Error("Bad state!");
-            }
             setUsers(json.users);
           } else {
             setError(json.error);

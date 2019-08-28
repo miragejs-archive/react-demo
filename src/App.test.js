@@ -88,7 +88,7 @@ test("it will show a message while the users are loading", async () => {
   // prementely showing its loading message.
   server.get("/users", () => {
     return new Promise(resolve => {
-      respond = resolve;
+      respond = () => resolve({ users: [] });
     });
   });
 
