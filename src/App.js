@@ -41,7 +41,7 @@ export default function App() {
         <div data-testid="loading">Loading users...</div>
       ) : error ? (
         <div data-testid="error">{error}</div>
-      ) : users.length > 0 ? (
+      ) : users && users.length > 0 ? (
         <ul data-testid="users">
           {users.map(user => (
             <li key={user.id} data-testid={`user-${user.id}`}>
