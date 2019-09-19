@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@miragejs/server": "0.1.25",
+    "@miragejs/server": "0.1.26",
     "@testing-library/jest-dom": "^4.1.0",
     "@testing-library/react": "^9.1.4",
     "prettier": "^1.18.2",

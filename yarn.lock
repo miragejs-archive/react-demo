@@ -1171,10 +1171,10 @@
     "@types/istanbul-reports" "^1.1.1"
     "@types/yargs" "^13.0.0"
 
-"@miragejs/server@0.1.25":
-  version "0.1.25"
-  resolved "https://registry.yarnpkg.com/@miragejs/server/-/server-0.1.25.tgz#3143e127dbec5b77226ae1ffc471353b743e03cb"
-  integrity sha512-pJh64a8njo/WwL8MTvrG5VxmgRSInabebfhZ64AuWsAf7ST1MWKqQd1faiNomPqXH6d3XMJY9Nw6QpkaMeqlnw==
+"@miragejs/server@0.1.26":
+  version "0.1.26"
+  resolved "https://registry.yarnpkg.com/@miragejs/server/-/server-0.1.26.tgz#7084a06e97a1dfa62090cb4050910a0f77c75870"
+  integrity sha512-yyknCjJ/H6Ogwqpwc3qUREs58TWfPqRz00sVnLErK96lGbS70glfPPNSAiXpo146SMIuDF3V66UPpLAxLKXbSg==
   dependencies:
     inflected "^2.0.4"
     lodash.assign "^4.2.0"
