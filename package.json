@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@miragejs/server": "0.1.28",
-    "@testing-library/jest-dom": "^4.1.0",
+    "@testing-library/jest-dom": "^4.1.2",
     "@testing-library/react": "^9.3.0",
     "prettier": "^1.18.2",
     "react": "^16.10.2",
