@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import "./App.css";
 
 export default function App() {
   let [users, setUsers] = useState([]);
@@ -36,7 +35,7 @@ export default function App() {
   }, []);
 
   return (
-    <div>
+    <div className='bg-gray-100 p-4'>
       {isLoading ? (
         <div data-testid="loading">Loading users...</div>
       ) : error ? (
