@@ -15,7 +15,7 @@ let startMirage = function({ environment = "test" } = {}) {
     },
     scenarios: {
       default(server) {
-        // server.createList("user", 3);
+        server.createList("user", 3);
       }
     },
     baseConfig() {

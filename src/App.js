@@ -35,7 +35,7 @@ export default function App() {
   }, []);
 
   return (
-    <div className='bg-gray-100 p-4'>
+    <div className="bg-gray-100 p-4">
       {isLoading ? (
         <div data-testid="loading">Loading users...</div>
       ) : error ? (
