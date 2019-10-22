@@ -1,13 +1,13 @@
 import React from "react";
 import { render, waitForElement } from "@testing-library/react";
 import App from "./App";
-import { startMirage } from "./mirage";
-import { Response } from "@miragejs/server";
+import { makeServer } from "./server";
+import { Response } from "miragejs";
 
 let server;
 
 beforeEach(() => {
-  server = startMirage();
+  server = makeServer({ environment: "test" });
 });
 
 afterEach(() => {

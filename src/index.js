@@ -2,8 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom";
 import App from "./App";
 import "./index.css";
-import { startMirage } from "./mirage";
+import { makeServer } from "./server";
 
-startMirage({ environment: "development" });
+makeServer();
 
 ReactDOM.render(<App />, document.getElementById("root"));
