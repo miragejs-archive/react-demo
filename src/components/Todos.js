@@ -24,7 +24,7 @@ export default function Todos() {
   let isSaving = pendingRequestIds.length > 0;
   let done = todos.filter(todo => todo.isDone).length;
 
-  function createTodo(event) {
+  async function createTodo(event) {
     event.preventDefault();
     let newTodo = { ...newTodoRef.current };
     let tempId = `t${tempIdCounter}`;
@@ -36,30 +36,25 @@ export default function Todos() {
     const requestId = Symbol();
     setPendingRequestIds([...pendingRequestIds, requestId]);
 
-    fetch("/api/todos", { method: "POST", body: JSON.stringify(newTodo) })
-      .then(res => res.json())
-      .then(json => {
-        if (isMountedRef.current) {
-          // Update client side cache with record from server
-          let index = latestTodos.findIndex(todo => todo.id === tempId);
-          setTodos(todos => {
-            return todos.map((oldTodo, i) => {
-              if (i === index) {
-                return json;
-              }
+    let json = await fetch("/api/todos", {
+      method: "POST",
+      body: JSON.stringify(newTodo)
+    }).then(res => res.json());
 
-              return oldTodo;
-            });
-          });
-
-          setPendingRequestIds(pendingRequestIds =>
-            pendingRequestIds.filter(id => id !== requestId)
-          );
-        }
+    if (isMountedRef.current) {
+      // Update client side cache with record from server
+      let index = latestTodos.findIndex(todo => todo.id === tempId);
+      setTodos(todos => {
+        return todos.map((oldTodo, i) => (i === index ? json : oldTodo));
       });
+
+      setPendingRequestIds(pendingRequestIds =>
+        pendingRequestIds.filter(id => id !== requestId)
+      );
+    }
   }
 
-  function saveTodo(todo) {
+  async function saveTodo(todo) {
     const requestId = Symbol();
     setPendingRequestIds([...pendingRequestIds, requestId]);
 
@@ -74,19 +69,39 @@ export default function Todos() {
       })
     );
 
-    fetch(`/api/todos/${todo.id}`, {
+    await fetch(`/api/todos/${todo.id}`, {
       method: "PATCH",
       body: JSON.stringify(todo)
-    }).then(() => {
-      if (isMountedRef.current) {
-        setPendingRequestIds(pendingRequestIds =>
-          pendingRequestIds.filter(id => id !== requestId)
-        );
-      }
     });
+
+    if (isMountedRef.current) {
+      setPendingRequestIds(pendingRequestIds =>
+        pendingRequestIds.filter(id => id !== requestId)
+      );
+    }
   }
 
-  function deleteCompleted() {}
+  async function deleteCompleted() {
+    const requestId = Symbol();
+    setPendingRequestIds([...pendingRequestIds, requestId]);
+
+    let completedTodos = todos.filter(t => t.isDone);
+    let remainingTodos = todos.filter(t => !t.isDone);
+
+    setTodos(remainingTodos);
+
+    await Promise.all(
+      completedTodos.map(todo =>
+        fetch(`/api/todos/${todo.id}`, { method: "DELETE" })
+      )
+    );
+
+    if (isMountedRef.current) {
+      setPendingRequestIds(pendingRequestIds =>
+        pendingRequestIds.filter(id => id !== requestId)
+      );
+    }
+  }
 
   function handleChange(event) {
     setNewTodoRef({ ...newTodoRef.current, ...{ text: event.target.value } });
@@ -241,7 +256,6 @@ function Todo({ todo, onChange }) {
           `}
         />
       </form>
-      <span>{localTodoRef.current.id}</span>
     </li>
   );
 }
