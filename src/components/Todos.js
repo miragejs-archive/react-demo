@@ -14,14 +14,36 @@ const useIsMountedRef = () => {
 
 let tempIdCounter = 1;
 
-export default function Todos() {
+function useRequestManager() {
   let [pendingRequestIds, setPendingRequestIds] = useState([]);
+
+  function create() {
+    const requestId = Symbol();
+    setPendingRequestIds([...pendingRequestIds, requestId]);
+
+    return {
+      done() {
+        setPendingRequestIds(pendingRequestIds =>
+          pendingRequestIds.filter(id => id !== requestId)
+        );
+      }
+    };
+  }
+
+  return {
+    create,
+    hasPendingRequests: pendingRequestIds.length > 0
+  };
+}
+
+export default function Todos() {
+  let manager = useRequestManager();
   let [todos, setTodos] = useState([]);
   let [isLoading, setIsLoading] = useState(true);
   let isMountedRef = useIsMountedRef();
   let [newTodoRef, setNewTodoRef] = useRefState({ text: "", isDone: false });
 
-  let isSaving = pendingRequestIds.length > 0;
+  let isSaving = manager.hasPendingRequests;
   let done = todos.filter(todo => todo.isDone).length;
 
   async function createTodo(event) {
@@ -33,9 +55,7 @@ export default function Todos() {
     setTodos(latestTodos);
     setNewTodoRef({ text: "", isDone: false });
 
-    const requestId = Symbol();
-    setPendingRequestIds([...pendingRequestIds, requestId]);
-
+    let request = manager.create();
     let json = await fetch("/api/todos", {
       method: "POST",
       body: JSON.stringify(newTodo)
@@ -48,16 +68,12 @@ export default function Todos() {
         return todos.map((oldTodo, i) => (i === index ? json : oldTodo));
       });
 
-      setPendingRequestIds(pendingRequestIds =>
-        pendingRequestIds.filter(id => id !== requestId)
-      );
+      request.done();
     }
   }
 
   async function saveTodo(todo) {
-    const requestId = Symbol();
-    setPendingRequestIds([...pendingRequestIds, requestId]);
-
+    let request = manager.create();
     let index = todos.findIndex(t => t.id === todo.id);
     setTodos(
       todos.map((oldTodo, i) => {
@@ -75,16 +91,12 @@ export default function Todos() {
     });
 
     if (isMountedRef.current) {
-      setPendingRequestIds(pendingRequestIds =>
-        pendingRequestIds.filter(id => id !== requestId)
-      );
+      request.done();
     }
   }
 
   async function deleteCompleted() {
-    const requestId = Symbol();
-    setPendingRequestIds([...pendingRequestIds, requestId]);
-
+    let request = manager.create();
     let completedTodos = todos.filter(t => t.isDone);
     let remainingTodos = todos.filter(t => !t.isDone);
 
@@ -97,9 +109,7 @@ export default function Todos() {
     );
 
     if (isMountedRef.current) {
-      setPendingRequestIds(pendingRequestIds =>
-        pendingRequestIds.filter(id => id !== requestId)
-      );
+      request.done();
     }
   }
 
