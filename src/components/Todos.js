@@ -12,21 +12,58 @@ const useIsMountedRef = () => {
   return isMounted;
 };
 
-export default function() {
+let tempIdCounter = 1;
+
+export default function Todos() {
   let [pendingRequestIds, setPendingRequestIds] = useState([]);
   let [todos, setTodos] = useState([]);
   let [isLoading, setIsLoading] = useState(true);
   let isMountedRef = useIsMountedRef();
-  let isSaving = pendingRequestIds.length > 0;
+  let [newTodoRef, setNewTodoRef] = useRefState({ text: "", isDone: false });
 
+  let isSaving = pendingRequestIds.length > 0;
   let done = todos.filter(todo => todo.isDone).length;
+
+  function createTodo(event) {
+    event.preventDefault();
+    let newTodo = { ...newTodoRef.current };
+    let tempId = `t${tempIdCounter}`;
+    tempIdCounter++;
+    let latestTodos = [...todos, { ...newTodo, ...{ id: tempId } }];
+    setTodos(latestTodos);
+    setNewTodoRef({ text: "", isDone: false });
+
+    const requestId = Symbol();
+    setPendingRequestIds([...pendingRequestIds, requestId]);
+
+    fetch("/api/todos", { method: "POST", body: JSON.stringify(newTodo) })
+      .then(res => res.json())
+      .then(json => {
+        if (isMountedRef.current) {
+          // Update client side cache with record from server
+          let index = latestTodos.findIndex(todo => todo.id === tempId);
+          setTodos(todos => {
+            return todos.map((oldTodo, i) => {
+              if (i === index) {
+                return json;
+              }
+
+              return oldTodo;
+            });
+          });
+
+          setPendingRequestIds(pendingRequestIds =>
+            pendingRequestIds.filter(id => id !== requestId)
+          );
+        }
+      });
+  }
 
   function saveTodo(todo) {
     const requestId = Symbol();
     setPendingRequestIds([...pendingRequestIds, requestId]);
 
     let index = todos.findIndex(t => t.id === todo.id);
-
     setTodos(
       todos.map((oldTodo, i) => {
         if (i === index) {
@@ -49,8 +86,11 @@ export default function() {
     });
   }
 
-  function createTodo() {}
   function deleteCompleted() {}
+
+  function handleChange(event) {
+    setNewTodoRef({ ...newTodoRef.current, ...{ text: event.target.value } });
+  }
 
   useEffect(() => {
     fetch("/api/todos")
@@ -84,7 +124,8 @@ export default function() {
               <form onSubmit={createTodo}>
                 <input
                   type="text"
-                  v-model="newTodo.text"
+                  value={newTodoRef.current.text}
+                  onChange={handleChange}
                   placeholder="New todo"
                   className="bg-white px-3 py-2 shadow rounded block w-full focus:outline-none placeholder-gray-500"
                 />
@@ -200,6 +241,7 @@ function Todo({ todo, onChange }) {
           `}
         />
       </form>
+      <span>{localTodoRef.current.id}</span>
     </li>
   );
 }
