@@ -1,8 +1,13 @@
 import React from "react";
-import { render, waitForElement } from "@testing-library/react";
+import {
+  render,
+  waitForElement,
+  waitForElementToBeRemoved,
+  fireEvent
+} from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import App from "./App";
 import { makeServer } from "./server";
-import { Response } from "miragejs";
 
 let server;
 
@@ -16,50 +21,56 @@ afterEach(() => {
 
 it("shows a loading message", () => {
   const { getByTestId } = render(<App />);
+
   expect(getByTestId("loading")).toBeInTheDocument();
 });
 
-it("shows a message if there are no todo", async () => {
+it("shows a message if there are no todos", async () => {
   const { getByTestId } = render(<App />);
-
-  await waitForElement(() => getByTestId("no-todos"));
+  await waitForElementToBeRemoved(() => getByTestId("loading"));
 
   expect(getByTestId("no-todos")).toBeInTheDocument();
 });
 
-// it("shows a list of todos", async () => {
-//   server.createList("todo", 3);
+it("can create a todo", async () => {
+  const { getByTestId } = render(<App />);
+  await waitForElementToBeRemoved(() => getByTestId("loading"));
 
-//   const { getByTestId } = render(<App />);
+  const newTodoForm = await waitForElement(() => getByTestId("new-todo-form"));
+  userEvent.type(newTodoForm.querySelector("input"), "Walk the dog");
+  fireEvent.submit(getByTestId("new-todo-form"));
+  await waitForElementToBeRemoved(() => getByTestId("saving"));
 
-//   await waitForElement(() => getByTestId("no-todos"));
+  const todo = getByTestId("todo");
+  expect(todo.querySelector('input[type="checkbox"]').checked).toBe(false);
+  expect(todo.querySelector('input[type="text"]').value).toBe("Walk the dog");
+  expect(server.db.todos.length).toBe(1);
+  expect(server.db.todos[0].text).toBe("Walk the dog");
+});
 
-//   expect(getByTestId("no-todos")).toBeInTheDocument();
-// });
+it("shows existing todos", async () => {
+  server.createList("todo", 3);
 
-// it("will show the name of a user", async () => {
-//   server.create("user", { name: "Alice" });
+  const { getByTestId, getAllByTestId } = render(<App />);
+  await waitForElementToBeRemoved(() => getByTestId("loading"));
 
-//   const { getByTestId } = render(<App />);
+  expect(getAllByTestId("todo")).toHaveLength(3);
+});
 
-//   await waitForElement(() => getByTestId("users"));
+it("can complete a todo", async () => {
+  server.create("todo", { text: "Todo 1", isDone: false });
+  server.create("todo", { text: "Todo 2", isDone: false });
 
-//   expect(getByTestId("user-1")).toHaveTextContent("Alice");
-// });
+  const { getByTestId, getAllByTestId } = render(<App />);
+  await waitForElementToBeRemoved(() => getByTestId("loading"));
+  const todos = getAllByTestId("todo");
+  userEvent.click(todos[1].querySelector("input[type='checkbox']"));
+  await waitForElementToBeRemoved(() => getByTestId("saving"));
 
-// it("will show a list of users", async () => {
-//   server.createList("user", 5);
-
-//   const { getByTestId } = render(<App />);
-
-//   await waitForElement(() => getByTestId("users"));
-
-//   expect(getByTestId("users")).toContainElement(getByTestId("user-1"));
-//   expect(getByTestId("users")).toContainElement(getByTestId("user-2"));
-//   expect(getByTestId("users")).toContainElement(getByTestId("user-3"));
-//   expect(getByTestId("users")).toContainElement(getByTestId("user-4"));
-//   expect(getByTestId("users")).toContainElement(getByTestId("user-5"));
-// });
+  expect(todos[0].querySelector('input[type="checkbox"]').checked).toBe(false);
+  expect(todos[1].querySelector('input[type="checkbox"]').checked).toBe(true);
+  expect(server.db.todos[1].isDone).toBe(true);
+});
 
 // test("it will show an error message from the server", async () => {
 //   server.get("/users", function() {

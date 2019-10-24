@@ -10,7 +10,7 @@ import About from "./components/About";
 
 export default function App() {
   return (
-    <div id="app" className="text-gray-900 bg-gray-300 h-screen pt-8">
+    <div id="app" className="bg-gray-300 h-screen pt-8">
       <Router>
         <div className="max-w-sm mx-auto">
           <header className="pb-8">

@@ -10,7 +10,10 @@ export function makeServer({ environment = "development" } = {}) {
 
     factories: {
       todo: Factory.extend({
-        text: i => `Todo ${i + 1}`,
+        text(i) {
+          return `Todo ${i + 1}`;
+        },
+
         isDone: false
       })
     },
