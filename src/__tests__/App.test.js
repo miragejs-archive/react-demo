@@ -6,8 +6,8 @@ import {
   fireEvent
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import App from "./App";
-import { makeServer } from "./server";
+import App from "../App";
+import { makeServer } from "../server";
 
 let server;
 
