@@ -1,16 +1,24 @@
-import { Server } from "miragejs";
+import { Server, Model, Factory } from "miragejs";
 
 export function makeServer({ environment = "development" } = {}) {
   let server = new Server({
     environment,
+
+    models: {
+      todo: Model
+    },
+
+    factories: {
+      todo: Factory.extend({
+        text: i => `Todo ${i + 1}`,
+        isDone: false
+      })
+    },
+
     seeds(server) {
-      server.db.loadData({
-        todos: [
-          { text: "Buy groceries", isDone: false },
-          { text: "Walk the dog", isDone: false },
-          { text: "Do laundry", isDone: false }
-        ]
-      });
+      server.create("todo", { text: "Buy groceries", isDone: false });
+      server.create("todo", { text: "Walk the dog", isDone: false });
+      server.create("todo", { text: "Do laundry", isDone: false });
     },
 
     routes() {

@@ -121,10 +121,12 @@ export default function Todos() {
     fetch("/api/todos")
       .then(res => res.json())
       .then(json => {
-        setTodos(json);
-        setIsLoading(false);
+        if (isMountedRef.current) {
+          setTodos(json);
+          setIsLoading(false);
+        }
       });
-  }, []);
+  }, [isMountedRef]);
 
   return (
     <div className="max-w-sm mx-auto py-6 px-4 bg-white shadow-lg rounded">
@@ -142,7 +144,9 @@ export default function Todos() {
 
       <div className="mt-6">
         {isLoading ? (
-          <p className="text-gray-500 px-3">Loading...</p>
+          <p className="text-gray-500 px-3" data-testid="loading">
+            Loading...
+          </p>
         ) : (
           <div>
             <div className="px-3">
@@ -157,16 +161,20 @@ export default function Todos() {
               </form>
             </div>
 
-            <ul className="mt-8">
-              {todos.map(todo => (
-                <Todo
-                  todo={todo}
-                  onChange={saveTodo}
-                  key={todo.id}
-                  className="my-1"
-                />
-              ))}
-            </ul>
+            {todos.length > 0 ? (
+              <ul className="mt-8">
+                {todos.map(todo => (
+                  <Todo todo={todo} onChange={saveTodo} key={todo.id} />
+                ))}
+              </ul>
+            ) : (
+              <p
+                className="text-gray-500 text-lg px-3 mt-16 text-center"
+                data-testid="no-todos"
+              >
+                Everything's done!
+              </p>
+            )}
 
             <div className="mt-12 px-3 flex justify-between font-medium text-gray-500 text-sm">
               {todos.length > 0 ? (
@@ -239,10 +247,10 @@ function Todo({ todo, onChange }) {
   return (
     <li
       className={`
-        rounded focus:bg-white border-2 flex items-center relative
-        ${isFocused ? "bg-white border-gray-300" : null}
-        ${!isFocused ? "border-transparent hover:bg-gray-200" : null}
-        ${!isFocused ? localTodoRef.current.isDone && "opacity-50" : null}
+        my-1 rounded focus:bg-white border-2 flex items-center relative
+        ${isFocused ? "bg-white border-gray-300" : ""}
+        ${!isFocused ? "border-transparent hover:bg-gray-200" : ""}
+        ${!isFocused && localTodoRef.current.isDone ? "opacity-50" : ""}
       `}
     >
       <input
@@ -262,7 +270,7 @@ function Todo({ todo, onChange }) {
           onBlur={commitChanges}
           className={`
             bg-transparent focus:outline-none px-3 py-1 block w-full
-            ${localTodoRef.current.isDone && !isFocused ? "line-through" : null}
+            ${localTodoRef.current.isDone && !isFocused ? "line-through" : ""}
           `}
         />
       </form>
