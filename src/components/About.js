@@ -31,7 +31,7 @@ export default function() {
           className="border-b border-blue-500 font-medium text-blue-500"
           href="https://github.com/miragejs/react-demo"
         >
-          Explore the code on GitHub →
+          View the code on GitHub →
         </a>
       </p>
     </div>
