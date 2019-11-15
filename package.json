@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@craco/craco": "^5.6.1",
-    "@testing-library/jest-dom": "^4.1.2",
+    "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.0",
     "miragejs": "^0.1.31",
     "react": "^16.11.0",
