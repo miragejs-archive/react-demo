@@ -17,10 +17,17 @@
     "start": "craco start",
     "build": "craco build",
     "test": "craco test",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run",
+    "cypress:dev": "start-server-and-test start http://localhost:3000 cypress:open",
+    "cypress:ci": "start-server-and-test start http://localhost:3000 cypress:run",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
-    "extends": "react-app"
+    "extends": [
+      "react-app",
+      "plugin:cypress/recommended"
+    ]
   },
   "browserslist": [
     ">0.2%",
@@ -30,6 +37,9 @@
   ],
   "devDependencies": {
     "@testing-library/user-event": "^7.1.2",
-    "prettier": "^1.19.1"
+    "cypress": "^3.7.0",
+    "eslint-plugin-cypress": "^2.7.0",
+    "prettier": "^1.19.1",
+    "start-server-and-test": "^1.10.6"
   }
 }

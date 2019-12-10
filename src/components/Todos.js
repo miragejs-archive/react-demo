@@ -129,8 +129,8 @@ export default function Todos() {
   }, [isMountedRef]);
 
   return (
-    <div className="max-w-sm mx-auto py-6 px-4 bg-white shadow-lg rounded">
-      <div className="flex justify-between items-center px-3">
+    <div className="max-w-sm px-4 py-6 mx-auto bg-white rounded shadow-lg">
+      <div className="flex items-center justify-between px-3">
         <h1 className="text-2xl font-bold">Todos</h1>
 
         <div className="text-blue-500">
@@ -148,7 +148,7 @@ export default function Todos() {
 
       <div className="mt-6">
         {isLoading ? (
-          <p className="text-gray-500 px-3" data-testid="loading">
+          <p className="px-3 text-gray-500" data-testid="loading">
             Loading...
           </p>
         ) : (
@@ -160,7 +160,7 @@ export default function Todos() {
                   value={newTodoRef.current.text}
                   onChange={handleChange}
                   placeholder="New todo"
-                  className="bg-white px-3 py-2 shadow rounded block w-full focus:outline-none placeholder-gray-500"
+                  className="block w-full px-3 py-2 placeholder-gray-500 bg-white rounded shadow focus:outline-none"
                 />
               </form>
             </div>
@@ -173,14 +173,14 @@ export default function Todos() {
               </ul>
             ) : (
               <p
-                className="text-gray-500 text-lg px-3 mt-16 text-center"
+                className="px-3 mt-16 text-lg text-center text-gray-500"
                 data-testid="no-todos"
               >
                 Everything's done!
               </p>
             )}
 
-            <div className="mt-12 px-3 flex justify-between font-medium text-gray-500 text-sm">
+            <div className="flex justify-between px-3 mt-12 text-sm font-medium text-gray-500">
               {todos.length > 0 ? (
                 <p>
                   {done} / {todos.length} complete
@@ -189,7 +189,7 @@ export default function Todos() {
               {done > 0 ? (
                 <button
                   onClick={deleteCompleted}
-                  className="text-blue-500 font-medium focus:outline-none focus:text-blue-300"
+                  className="font-medium text-blue-500 focus:outline-none focus:text-blue-300"
                 >
                   Clear completed
                 </button>
@@ -265,7 +265,7 @@ function Todo({ todo, onChange }) {
         className="ml-2"
       />
 
-      <form onSubmit={handleSubmit} className="w-full relative">
+      <form onSubmit={handleSubmit} className="relative w-full">
         <input
           type="text"
           value={localTodoRef.current.text}
