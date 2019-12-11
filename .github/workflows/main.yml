@@ -8,8 +8,6 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - uses: actions/setup-node@v1
-    - name: Install
-      run: yarn install
-    - name: Test
-      run: yarn test
+    - run: yarn install
+    - run: yarn test
 
