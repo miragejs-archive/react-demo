@@ -4,8 +4,10 @@ on: [push]
 
 jobs:
 
-  build:
+  test:
     runs-on: ubuntu-latest
+    env:
+      CI: true
     steps:
     - uses: actions/checkout@v1
     - uses: actions/setup-node@v1
@@ -22,12 +24,12 @@ jobs:
           ${{ runner.os }}-yarn-
   
     - run: yarn install
-  
-  test:
-    runs-on: ubuntu-latest
-    env:
-      CI: true
-    needs: build
-    steps:  
     - run: yarn test
+    
+    - uses: cypress-io/github-action@v1.16.1
+      with:
+        start: yarn start
+        wait-on: 'http://localhost:3000'
+        
+  
 
