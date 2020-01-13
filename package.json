@@ -37,7 +37,7 @@
   ],
   "devDependencies": {
     "@testing-library/user-event": "^7.2.1",
-    "cypress": "^3.8.1",
+    "cypress": "^3.8.2",
     "eslint-plugin-cypress": "^2.8.1",
     "prettier": "^1.19.1",
     "start-server-and-test": "^1.10.6"
