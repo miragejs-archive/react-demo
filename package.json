@@ -40,6 +40,6 @@
     "cypress": "^3.8.3",
     "eslint-plugin-cypress": "^2.10.3",
     "prettier": "^1.19.1",
-    "start-server-and-test": "^1.10.8"
+    "start-server-and-test": "^1.10.9"
   }
 }
