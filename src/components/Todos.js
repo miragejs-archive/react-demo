@@ -75,31 +75,17 @@ export default function Todos() {
   }
 
   async function saveTodo(todo) {
-    let request = manager.create();
-    let index = todos.findIndex(t => t.id === todo.id);
-    // optimistic ui
-    setTodos(
-      todos.map((oldTodo, i) => {
-        if (i === index) {
-          return todo;
-        }
-
-        return oldTodo;
-      })
+    // Optimistic UI update
+    let index = newTodos.findIndex(t => t.id === todo.id);
+    updateTodos(
+      newTodos.map((oldTodo, i) => (i === index ? todo : oldTodo)),
+      false
     );
 
-    await fetch(`/api/todos/${todo.id}`, {
+    await fetcher(`/api/todos/${todo.id}`, {
       method: "PATCH",
       body: JSON.stringify(todo)
     });
-
-    // console.log("hi");
-
-    // mutate("/api/users");
-
-    if (isMountedRef.current) {
-      request.done();
-    }
   }
 
   async function deleteCompleted() {
