@@ -83,7 +83,7 @@ it("can complete a todo", async () => {
   expect(server.db.todos[1].isDone).toBe(true);
 });
 
-it.only("can clear completed todos", async () => {
+it("can clear completed todos", async () => {
   server.create("todo", { text: "Todo 1", isDone: true });
   server.create("todo", { text: "Todo 2", isDone: false });
 
@@ -91,19 +91,9 @@ it.only("can clear completed todos", async () => {
   await waitForElementToBeRemoved(() => getByTestId("loading"));
   expect(getByTestId("completed-todos")).toHaveTextContent("1 / 2 complete");
 
-  let button = getByTestId("clear-completed");
-  // userEvent.click(button);
-  fireEvent.click(button);
-  // const { getByTestId, getAllByTestId } = render(<App />);
-  // await waitForElementToBeRemoved(() => getByTestId("loading"));
-  // const todos = getAllByTestId("todo");
-  // userEvent.click(todos[1].querySelector("input[type='checkbox']"));
+  userEvent.click(getByTestId("clear-completed"));
+  await waitForElementToBeRemoved(() => getByTestId("saving"));
 
-  // expect(getByTestId("completed-todos")).toHaveTextContent("1 / 2 complete");
-
-  // await waitForElementToBeRemoved(() => getByTestId("saving"));
-
-  // expect(todos[0].querySelector('input[type="checkbox"]').checked).toBe(false);
-  // expect(todos[1].querySelector('input[type="checkbox"]').checked).toBe(true);
-  // expect(server.db.todos[1].isDone).toBe(true);
+  expect(getByTestId("completed-todos")).toHaveTextContent("0 / 1 complete");
+  expect(server.db.todos).toHaveLength(1);
 });

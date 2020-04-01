@@ -1,7 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import useSWR from "swr";
 
-const fetcher = (url, options) => fetch(url, options).then(r => r.json());
+const fetcher = (url, options) =>
+  fetch(url, options).then(r => {
+    if (r.headers.get("content-type").match("json")) {
+      return r.json();
+    }
+  });
 
 const useIsMountedRef = () => {
   const isMounted = useRef(true);
@@ -41,7 +46,6 @@ function useRequestManager() {
 
 export default function Todos() {
   let manager = useRequestManager();
-  let [todos, setTodos] = useState([]);
   let isMountedRef = useIsMountedRef();
   let [newTodoRef, setNewTodoRef] = useRefState({ text: "", isDone: false });
 
@@ -99,14 +103,16 @@ export default function Todos() {
 
   async function deleteCompleted() {
     let request = manager.create();
-    let completedTodos = todos.filter(t => t.isDone);
-    let remainingTodos = todos.filter(t => !t.isDone);
+    let completedTodos = newTodos.filter(t => t.isDone);
+    let remainingTodos = newTodos.filter(t => !t.isDone);
 
-    setTodos(remainingTodos);
+    // Optimistic UI update
+    updateTodos(remainingTodos, false);
 
+    // Delete all completed todos
     await Promise.all(
       completedTodos.map(todo =>
-        fetch(`/api/todos/${todo.id}`, { method: "DELETE" })
+        fetcher(`/api/todos/${todo.id}`, { method: "DELETE" })
       )
     );
 
