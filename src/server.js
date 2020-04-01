@@ -38,11 +38,15 @@ export function makeServer({ environment = "development" } = {}) {
         return schema.db.todos.update(todo.id, todo);
       });
 
-      this.post("/todos", (schema, request) => {
-        let todo = JSON.parse(request.requestBody);
+      this.post(
+        "/todos",
+        (schema, request) => {
+          let todo = JSON.parse(request.requestBody);
 
-        return schema.db.todos.insert(todo);
-      });
+          return schema.db.todos.insert(todo);
+        },
+        { timing: 2000 }
+      );
 
       this.delete("/todos/:id", (schema, request) => {
         return schema.db.todos.remove(request.params.id);

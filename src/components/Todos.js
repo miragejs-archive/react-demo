@@ -1,4 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
+import useSWR from "swr";
+
+const fetcher = (url, options) =>
+  fetch(url, options).then(r => {
+    if (r.headers.get("content-type").match("json")) {
+      return r.json();
+    }
+  });
 
 const useIsMountedRef = () => {
   const isMounted = useRef(true);
@@ -38,58 +46,56 @@ function useRequestManager() {
 
 export default function Todos() {
   let manager = useRequestManager();
-  let [todos, setTodos] = useState([]);
-  let [isLoading, setIsLoading] = useState(true);
   let isMountedRef = useIsMountedRef();
   let [newTodoRef, setNewTodoRef] = useRefState({ text: "", isDone: false });
 
   let isSaving = manager.hasPendingRequests;
-  let done = todos.filter(todo => todo.isDone).length;
 
   async function createTodo(event) {
     event.preventDefault();
     let newTodo = { ...newTodoRef.current };
     let tempId = `t${tempIdCounter}`;
     tempIdCounter++;
-    let latestTodos = [...todos, { ...newTodo, ...{ id: tempId } }];
-    setTodos(latestTodos);
+    let localNewTodo = { ...newTodo, ...{ id: tempId } };
+
+    // Optimistic UI update
+    updateTodos([...newTodos, localNewTodo], false);
+
+    // Resetting the new todo textbox
     setNewTodoRef({ text: "", isDone: false });
 
+    // Create the todo
     let request = manager.create();
-    let json = await fetch("/api/todos", {
+    let newTodoJson = await fetcher("/api/todos", {
       method: "POST",
       body: JSON.stringify(newTodo)
-    }).then(res => res.json());
+    });
 
     if (isMountedRef.current) {
-      // Update client side cache with record from server
-      let index = latestTodos.findIndex(todo => todo.id === tempId);
-      setTodos(todos => {
-        return todos.map((oldTodo, i) => (i === index ? json : oldTodo));
-      });
-
       request.done();
     }
+
+    // Update client side cache with record from server
+    updateTodos(todos => {
+      let index = todos.findIndex(todo => todo.id === tempId);
+      return todos.map((oldTodo, i) => (i === index ? newTodoJson : oldTodo));
+    }, false);
   }
 
   async function saveTodo(todo) {
-    let request = manager.create();
-    let index = todos.findIndex(t => t.id === todo.id);
-    setTodos(
-      todos.map((oldTodo, i) => {
-        if (i === index) {
-          return todo;
-        }
-
-        return oldTodo;
-      })
+    // Optimistic UI update
+    let index = newTodos.findIndex(t => t.id === todo.id);
+    updateTodos(
+      newTodos.map((oldTodo, i) => (i === index ? todo : oldTodo)),
+      false
     );
 
-    await fetch(`/api/todos/${todo.id}`, {
+    // Save the updated todo
+    let request = manager.create();
+    await fetcher(`/api/todos/${todo.id}`, {
       method: "PATCH",
       body: JSON.stringify(todo)
     });
-
     if (isMountedRef.current) {
       request.done();
     }
@@ -97,14 +103,16 @@ export default function Todos() {
 
   async function deleteCompleted() {
     let request = manager.create();
-    let completedTodos = todos.filter(t => t.isDone);
-    let remainingTodos = todos.filter(t => !t.isDone);
+    let completedTodos = newTodos.filter(t => t.isDone);
+    let remainingTodos = newTodos.filter(t => !t.isDone);
 
-    setTodos(remainingTodos);
+    // Optimistic UI update
+    updateTodos(remainingTodos, false);
 
+    // Delete all completed todos
     await Promise.all(
       completedTodos.map(todo =>
-        fetch(`/api/todos/${todo.id}`, { method: "DELETE" })
+        fetcher(`/api/todos/${todo.id}`, { method: "DELETE" })
       )
     );
 
@@ -117,16 +125,8 @@ export default function Todos() {
     setNewTodoRef({ ...newTodoRef.current, ...{ text: event.target.value } });
   }
 
-  useEffect(() => {
-    fetch("/api/todos")
-      .then(res => res.json())
-      .then(json => {
-        if (isMountedRef.current) {
-          setTodos(json);
-          setIsLoading(false);
-        }
-      });
-  }, [isMountedRef]);
+  const { data: newTodos, mutate: updateTodos } = useSWR("/api/todos", fetcher);
+  let done = newTodos && newTodos.filter(todo => todo.isDone).length;
 
   return (
     <div className="max-w-sm px-4 py-6 mx-auto bg-white rounded shadow-lg">
@@ -147,7 +147,7 @@ export default function Todos() {
       </div>
 
       <div className="mt-6">
-        {isLoading ? (
+        {!newTodos ? (
           <p className="px-3 text-gray-500" data-testid="loading">
             Loading...
           </p>
@@ -165,9 +165,9 @@ export default function Todos() {
               </form>
             </div>
 
-            {todos.length > 0 ? (
+            {newTodos.length > 0 ? (
               <ul className="mt-8">
-                {todos.map(todo => (
+                {newTodos.map(todo => (
                   <Todo todo={todo} onChange={saveTodo} key={todo.id} />
                 ))}
               </ul>
@@ -181,15 +181,16 @@ export default function Todos() {
             )}
 
             <div className="flex justify-between px-3 mt-12 text-sm font-medium text-gray-500">
-              {todos.length > 0 ? (
-                <p>
-                  {done} / {todos.length} complete
+              {newTodos.length > 0 ? (
+                <p data-testid="completed-todos">
+                  {done} / {newTodos.length} complete
                 </p>
               ) : null}
               {done > 0 ? (
                 <button
                   onClick={deleteCompleted}
                   className="font-medium text-blue-500 focus:outline-none focus:text-blue-300"
+                  data-testid="clear-completed"
                 >
                   Clear completed
                 </button>
@@ -257,6 +258,7 @@ function Todo({ todo, onChange }) {
         ${!isFocused && localTodoRef.current.isDone ? "opacity-50" : ""}
       `}
       data-testid="todo"
+      data-todoid={localTodoRef.current.id}
     >
       <input
         type="checkbox"
