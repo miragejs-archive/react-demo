@@ -46,7 +46,6 @@ export default function Todos() {
   let [newTodoRef, setNewTodoRef] = useRefState({ text: "", isDone: false });
 
   let isSaving = manager.hasPendingRequests;
-  let done = todos.filter(todo => todo.isDone).length;
 
   async function createTodo(event) {
     event.preventDefault();
@@ -121,6 +120,7 @@ export default function Todos() {
   }
 
   const { data: newTodos, mutate: updateTodos } = useSWR("/api/todos", fetcher);
+  let done = newTodos && newTodos.filter(todo => todo.isDone).length;
 
   return (
     <div className="max-w-sm px-4 py-6 mx-auto bg-white rounded shadow-lg">
@@ -176,7 +176,7 @@ export default function Todos() {
 
             <div className="flex justify-between px-3 mt-12 text-sm font-medium text-gray-500">
               {newTodos.length > 0 ? (
-                <p>
+                <p data-testid="completed-todos">
                   {done} / {newTodos.length} complete
                 </p>
               ) : null}
@@ -184,6 +184,7 @@ export default function Todos() {
                 <button
                   onClick={deleteCompleted}
                   className="font-medium text-blue-500 focus:outline-none focus:text-blue-300"
+                  data-testid="clear-completed"
                 >
                   Clear completed
                 </button>
