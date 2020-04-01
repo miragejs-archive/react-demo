@@ -1,4 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
+import useSWR, { mutate } from "swr";
+
+const fetcher = (url, options) => fetch(url, options).then(r => r.json());
 
 const useIsMountedRef = () => {
   const isMounted = useRef(true);
@@ -39,7 +42,6 @@ function useRequestManager() {
 export default function Todos() {
   let manager = useRequestManager();
   let [todos, setTodos] = useState([]);
-  let [isLoading, setIsLoading] = useState(true);
   let isMountedRef = useIsMountedRef();
   let [newTodoRef, setNewTodoRef] = useRefState({ text: "", isDone: false });
 
@@ -51,30 +53,35 @@ export default function Todos() {
     let newTodo = { ...newTodoRef.current };
     let tempId = `t${tempIdCounter}`;
     tempIdCounter++;
-    let latestTodos = [...todos, { ...newTodo, ...{ id: tempId } }];
-    setTodos(latestTodos);
+    let localNewTodo = { ...newTodo, ...{ id: tempId } };
+
+    // Optimistic UI update
+    mutate("/api/todos", [...newTodos, localNewTodo], false);
+
+    // Resetting the new todo textbox
     setNewTodoRef({ text: "", isDone: false });
 
-    let request = manager.create();
-    let json = await fetch("/api/todos", {
+    // Create the todo
+    let newTodoJson = await fetcher("/api/todos", {
       method: "POST",
       body: JSON.stringify(newTodo)
-    }).then(res => res.json());
+    });
 
-    if (isMountedRef.current) {
-      // Update client side cache with record from server
-      let index = latestTodos.findIndex(todo => todo.id === tempId);
-      setTodos(todos => {
-        return todos.map((oldTodo, i) => (i === index ? json : oldTodo));
-      });
-
-      request.done();
-    }
+    // Update client side cache with record from server
+    mutate(
+      "/api/todos",
+      todos => {
+        let index = todos.findIndex(todo => todo.id === tempId);
+        return todos.map((oldTodo, i) => (i === index ? newTodoJson : oldTodo));
+      },
+      false
+    );
   }
 
   async function saveTodo(todo) {
     let request = manager.create();
     let index = todos.findIndex(t => t.id === todo.id);
+    // optimistic ui
     setTodos(
       todos.map((oldTodo, i) => {
         if (i === index) {
@@ -89,6 +96,10 @@ export default function Todos() {
       method: "PATCH",
       body: JSON.stringify(todo)
     });
+
+    // console.log("hi");
+
+    // mutate("/api/users");
 
     if (isMountedRef.current) {
       request.done();
@@ -117,16 +128,17 @@ export default function Todos() {
     setNewTodoRef({ ...newTodoRef.current, ...{ text: event.target.value } });
   }
 
-  useEffect(() => {
-    fetch("/api/todos")
-      .then(res => res.json())
-      .then(json => {
-        if (isMountedRef.current) {
-          setTodos(json);
-          setIsLoading(false);
-        }
-      });
-  }, [isMountedRef]);
+  // useEffect(() => {
+  //   fetch("/api/todos")
+  //     .then(res => res.json())
+  //     .then(json => {
+  //       if (isMountedRef.current) {
+  //         setTodos(json);
+  //         setIsLoading(false);
+  //       }
+  //     });
+  // }, [isMountedRef]);
+  const { data: newTodos } = useSWR("/api/todos", fetcher);
 
   return (
     <div className="max-w-sm px-4 py-6 mx-auto bg-white rounded shadow-lg">
@@ -147,7 +159,7 @@ export default function Todos() {
       </div>
 
       <div className="mt-6">
-        {isLoading ? (
+        {!newTodos ? (
           <p className="px-3 text-gray-500" data-testid="loading">
             Loading...
           </p>
@@ -165,9 +177,9 @@ export default function Todos() {
               </form>
             </div>
 
-            {todos.length > 0 ? (
+            {newTodos.length > 0 ? (
               <ul className="mt-8">
-                {todos.map(todo => (
+                {newTodos.map(todo => (
                   <Todo todo={todo} onChange={saveTodo} key={todo.id} />
                 ))}
               </ul>
@@ -181,9 +193,9 @@ export default function Todos() {
             )}
 
             <div className="flex justify-between px-3 mt-12 text-sm font-medium text-gray-500">
-              {todos.length > 0 ? (
+              {newTodos.length > 0 ? (
                 <p>
-                  {done} / {todos.length} complete
+                  {done} / {newTodos.length} complete
                 </p>
               ) : null}
               {done > 0 ? (
@@ -257,6 +269,7 @@ function Todo({ todo, onChange }) {
         ${!isFocused && localTodoRef.current.isDone ? "opacity-50" : ""}
       `}
       data-testid="todo"
+      data-todoid={localTodoRef.current.id}
     >
       <input
         type="checkbox"
