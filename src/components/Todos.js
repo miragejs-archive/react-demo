@@ -56,7 +56,7 @@ export default function Todos() {
     let localNewTodo = { ...newTodo, ...{ id: tempId } };
 
     // Optimistic UI update
-    mutate("/api/todos", [...newTodos, localNewTodo], false);
+    updateTodos([...newTodos, localNewTodo], false);
 
     // Resetting the new todo textbox
     setNewTodoRef({ text: "", isDone: false });
@@ -68,14 +68,10 @@ export default function Todos() {
     });
 
     // Update client side cache with record from server
-    mutate(
-      "/api/todos",
-      todos => {
-        let index = todos.findIndex(todo => todo.id === tempId);
-        return todos.map((oldTodo, i) => (i === index ? newTodoJson : oldTodo));
-      },
-      false
-    );
+    updateTodos(todos => {
+      let index = todos.findIndex(todo => todo.id === tempId);
+      return todos.map((oldTodo, i) => (i === index ? newTodoJson : oldTodo));
+    }, false);
   }
 
   async function saveTodo(todo) {
@@ -138,7 +134,7 @@ export default function Todos() {
   //       }
   //     });
   // }, [isMountedRef]);
-  const { data: newTodos } = useSWR("/api/todos", fetcher);
+  const { data: newTodos, mutate: updateTodos } = useSWR("/api/todos", fetcher);
 
   return (
     <div className="max-w-sm px-4 py-6 mx-auto bg-white rounded shadow-lg">
