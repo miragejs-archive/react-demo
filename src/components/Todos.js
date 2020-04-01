@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import useSWR, { mutate } from "swr";
+import useSWR from "swr";
 
 const fetcher = (url, options) => fetch(url, options).then(r => r.json());
 
@@ -62,10 +62,15 @@ export default function Todos() {
     setNewTodoRef({ text: "", isDone: false });
 
     // Create the todo
+    let request = manager.create();
     let newTodoJson = await fetcher("/api/todos", {
       method: "POST",
       body: JSON.stringify(newTodo)
     });
+
+    if (isMountedRef.current) {
+      request.done();
+    }
 
     // Update client side cache with record from server
     updateTodos(todos => {
@@ -82,10 +87,15 @@ export default function Todos() {
       false
     );
 
+    // Save the updated todo
+    let request = manager.create();
     await fetcher(`/api/todos/${todo.id}`, {
       method: "PATCH",
       body: JSON.stringify(todo)
     });
+    if (isMountedRef.current) {
+      request.done();
+    }
   }
 
   async function deleteCompleted() {
@@ -110,16 +120,6 @@ export default function Todos() {
     setNewTodoRef({ ...newTodoRef.current, ...{ text: event.target.value } });
   }
 
-  // useEffect(() => {
-  //   fetch("/api/todos")
-  //     .then(res => res.json())
-  //     .then(json => {
-  //       if (isMountedRef.current) {
-  //         setTodos(json);
-  //         setIsLoading(false);
-  //       }
-  //     });
-  // }, [isMountedRef]);
   const { data: newTodos, mutate: updateTodos } = useSWR("/api/todos", fetcher);
 
   return (

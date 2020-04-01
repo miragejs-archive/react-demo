@@ -45,7 +45,7 @@ export function makeServer({ environment = "development" } = {}) {
 
           return schema.db.todos.insert(todo);
         },
-        { timing: 5000 }
+        { timing: 2000 }
       );
 
       this.delete("/todos/:id", (schema, request) => {
