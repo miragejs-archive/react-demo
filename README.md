@@ -1,5 +1,7 @@
 # Mirage React demo
 
+![CI](https://github.com/miragejs/react-demo/workflows/CI/badge.svg)
+
 To run the demo locally,
 
 1. Clone this repo
