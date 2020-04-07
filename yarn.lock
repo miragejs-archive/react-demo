@@ -8366,10 +8366,10 @@ minizlib@^1.2.1:
   dependencies:
     minipass "^2.9.0"
 
-miragejs@^0.1.36:
-  version "0.1.36"
-  resolved "https://registry.yarnpkg.com/miragejs/-/miragejs-0.1.36.tgz#2c1155cc004a0e835da682fcda21d65099ec2c02"
-  integrity sha512-tvJiLVBGXMvHSkp/jvty/kf58Lahd6H5pP3fE9Hmxq9GkFvKpvL295el2JYoPOSiwK+s16O80a9vg8AE2ulNZQ==
+miragejs@^0.1.37:
+  version "0.1.37"
+  resolved "https://registry.yarnpkg.com/miragejs/-/miragejs-0.1.37.tgz#e6b5bc3831490fe203248478c7bd160a70926bd5"
+  integrity sha512-noJV8pt3MUuSPrqvGlT+3HJbq+YYnvJG+3sjGEfKL9K5nQJBKqvn2FETvUQqc5U5hJItsMNlmi/ra4muCC5zeA==
   dependencies:
     "@miragejs/pretender-node-polyfill" "^0.1.0"
     inflected "^2.0.4"
