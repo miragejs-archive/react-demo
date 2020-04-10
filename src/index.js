@@ -16,7 +16,7 @@ if (window.Cypress) {
     }
   });
   cyServer.logging = false;
-} else if (!process.env.PROXY) {
+} else if (!process.env.REACT_APP_PROXY) {
   // mirage dev server
   makeServer();
 }

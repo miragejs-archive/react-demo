@@ -2,8 +2,14 @@ import React, { useEffect, useState, useRef } from "react";
 import useSWR from "swr";
 
 const fetcher = (url, options) =>
-  fetch(url, options).then(r => {
-    if (r.headers.get("content-type").match("json")) {
+  fetch(url, {
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json"
+    },
+    ...options
+  }).then(r => {
+    if (r?.headers?.get("content-type")?.match("json")) {
       return r.json();
     }
   });
