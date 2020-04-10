@@ -59,7 +59,7 @@ export default function Todos() {
     let localNewTodo = { ...newTodo, ...{ id: tempId } };
 
     // Optimistic UI update
-    updateTodos([...newTodos, localNewTodo], false);
+    updateTodosCache({ todos: [...todos, localNewTodo] }, false);
 
     // Resetting the new todo textbox
     setNewTodoRef({ text: "", isDone: false });
@@ -68,7 +68,7 @@ export default function Todos() {
     let request = manager.create();
     let newTodoJson = await fetcher("/api/todos", {
       method: "POST",
-      body: JSON.stringify(newTodo)
+      body: JSON.stringify({ todo: newTodo })
     });
 
     if (isMountedRef.current) {
@@ -76,17 +76,24 @@ export default function Todos() {
     }
 
     // Update client side cache with record from server
-    updateTodos(todos => {
-      let index = todos.findIndex(todo => todo.id === tempId);
-      return todos.map((oldTodo, i) => (i === index ? newTodoJson : oldTodo));
+    updateTodosCache(cache => {
+      let changedIndex = cache.todos.findIndex(todo => todo.id === tempId);
+
+      return {
+        todos: cache.todos.map((oldTodo, i) =>
+          i === changedIndex ? newTodoJson.todo : oldTodo
+        )
+      };
     }, false);
   }
 
   async function saveTodo(todo) {
     // Optimistic UI update
-    let index = newTodos.findIndex(t => t.id === todo.id);
-    updateTodos(
-      newTodos.map((oldTodo, i) => (i === index ? todo : oldTodo)),
+    let changedIndex = todos.findIndex(t => t.id === todo.id);
+    updateTodosCache(
+      {
+        todos: todos.map((oldTodo, i) => (i === changedIndex ? todo : oldTodo))
+      },
       false
     );
 
@@ -94,7 +101,7 @@ export default function Todos() {
     let request = manager.create();
     await fetcher(`/api/todos/${todo.id}`, {
       method: "PATCH",
-      body: JSON.stringify(todo)
+      body: JSON.stringify({ todo })
     });
     if (isMountedRef.current) {
       request.done();
@@ -103,11 +110,11 @@ export default function Todos() {
 
   async function deleteCompleted() {
     let request = manager.create();
-    let completedTodos = newTodos.filter(t => t.isDone);
-    let remainingTodos = newTodos.filter(t => !t.isDone);
+    let completedTodos = todos.filter(t => t.isDone);
+    let remainingTodos = todos.filter(t => !t.isDone);
 
     // Optimistic UI update
-    updateTodos(remainingTodos, false);
+    updateTodosCache({ todos: remainingTodos }, false);
 
     // Delete all completed todos
     await Promise.all(
@@ -125,8 +132,10 @@ export default function Todos() {
     setNewTodoRef({ ...newTodoRef.current, ...{ text: event.target.value } });
   }
 
-  const { data: newTodos, mutate: updateTodos } = useSWR("/api/todos", fetcher);
-  let done = newTodos && newTodos.filter(todo => todo.isDone).length;
+  const { data, mutate: updateTodosCache } = useSWR("/api/todos", fetcher);
+
+  let todos = data?.todos;
+  let done = todos?.filter(todo => todo.isDone).length;
 
   return (
     <div className="max-w-sm px-4 py-6 mx-auto bg-white rounded shadow-lg">
@@ -147,7 +156,7 @@ export default function Todos() {
       </div>
 
       <div className="mt-6">
-        {!newTodos ? (
+        {!todos ? (
           <p className="px-3 text-gray-500" data-testid="loading">
             Loading...
           </p>
@@ -165,9 +174,9 @@ export default function Todos() {
               </form>
             </div>
 
-            {newTodos.length > 0 ? (
+            {data.todos.length > 0 ? (
               <ul className="mt-8">
-                {newTodos.map(todo => (
+                {data.todos.map(todo => (
                   <Todo todo={todo} onChange={saveTodo} key={todo.id} />
                 ))}
               </ul>
@@ -181,9 +190,9 @@ export default function Todos() {
             )}
 
             <div className="flex justify-between px-3 mt-12 text-sm font-medium text-gray-500">
-              {newTodos.length > 0 ? (
+              {todos.length > 0 ? (
                 <p data-testid="completed-todos">
-                  {done} / {newTodos.length} complete
+                  {done} / {todos.length} complete
                 </p>
               ) : null}
               {done > 0 ? (
