@@ -28,28 +28,28 @@ export function makeServer({ environment = "development" } = {}) {
       this.namespace = "api";
       this.timing = 750;
 
-      this.get("/todos", ({ db }) => {
-        return db.todos;
+      this.get("/todos", schema => {
+        return schema.todos.all();
       });
 
       this.patch("/todos/:id", (schema, request) => {
-        let todo = JSON.parse(request.requestBody);
+        let attrs = JSON.parse(request.requestBody).todo;
 
-        return schema.db.todos.update(todo.id, todo);
+        return schema.todos.find(request.params.id).update(attrs);
       });
 
       this.post(
         "/todos",
         (schema, request) => {
-          let todo = JSON.parse(request.requestBody);
+          let attrs = JSON.parse(request.requestBody).todo;
 
-          return schema.db.todos.insert(todo);
+          return schema.todos.create(attrs);
         },
         { timing: 2000 }
       );
 
       this.delete("/todos/:id", (schema, request) => {
-        return schema.db.todos.remove(request.params.id);
+        return schema.todos.find(request.params.id).destroy();
       });
     }
   });
