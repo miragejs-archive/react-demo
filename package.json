@@ -39,7 +39,7 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "@testing-library/user-event": "^10.3.3",
+    "@testing-library/user-event": "^10.3.4",
     "cypress": "^4.6.0",
     "eslint-plugin-cypress": "^2.10.3",
     "prettier": "^2.0.5",
