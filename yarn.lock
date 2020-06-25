@@ -2080,10 +2080,10 @@
     "@testing-library/dom" "^6.15.0"
     "@types/testing-library__react" "^9.1.2"
 
-"@testing-library/user-event@^10.4.1":
-  version "10.4.1"
-  resolved "https://registry.yarnpkg.com/@testing-library/user-event/-/user-event-10.4.1.tgz#f62adeae45681484dc24e6ca4f0b8f8a09321429"
-  integrity sha512-3sdJAfjT0i4aNvo0Gqod5MvZXutMXarVsLtb+r1t65AaRJY7BgMIzWgOtfM5dxRvZsc7IdXnCt9+gcWhiXk1xg==
+"@testing-library/user-event@^12.0.9":
+  version "12.0.9"
+  resolved "https://registry.yarnpkg.com/@testing-library/user-event/-/user-event-12.0.9.tgz#c2978417e0e6225a0e17b4f2a327b0777d29789a"
+  integrity sha512-6kcUf6G7BUafBqoiLP9XIY+7BfCleKXccK0IYVWYZc8xCGAR7nth116DMjlv76oIAHXXo+JzaJFiEvnRVtf74Q==
   dependencies:
     "@babel/runtime" "^7.10.2"
 
