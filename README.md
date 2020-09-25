@@ -1,5 +1,7 @@
 # Mirage React demo
 
+Moved to [https://github.com/miragejs/examples](https://github.com/miragejs/examples).
+
 ![CI](https://github.com/miragejs/react-demo/workflows/CI/badge.svg)
 
 To run the demo locally,
